@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <title>Інтерактивна карта дендропарку Олександрія</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    body { margin: 0; display: flex; font-family: sans-serif; }
+    #map { width: 70vw; height: 100vh; }
+    #info { width: 30vw; padding: 20px; overflow-y: auto; background: #f9f9f9; }
+    .point { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+<div id="info">
+  <h2>Історія парку Олександрія</h2>
+  <p>
+    Дендропарк «Олександрія» — один із найвідоміших історико-ландшафтних парків України.  
+    Його створила родина Браницьких наприкінці XVIII — на початку XIX століття.  
+    Парк поєднує архітектурні споруди, ставки, альтанки, мости та острови, що створюють романтичні композиції.  
+    Після Другої світової війни парк зазнав руйнувань, але був відновлений і нині є популярним місцем для прогулянок, фотосесій та екскурсій.
+  </p>
+  <h3>Головні об’єкти парку</h3>
+  <div id="points-list"></div>
+</div>
+
+<script>
+  var map = L.map('map').setView([49.8135, 30.0672], 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+  var points = [
+    { name: "Колонада «Луна»", coords: [49.81353, 30.06698], description: "Класична колонада — одна з архітектурних перлин парку." },
+    { name: "Ротонда", coords: [49.81255, 30.06555], description: "Класичний павільйон у центрі парку." },
+    { name: "Китайський місток", coords: [49.8130, 30.0685], description: "Місток у китайському стилі через ставок." },
+    { name: "Острів Мрії", coords: [49.8139, 30.0708], description: "Романтичний острів серед води." },
+    { name: "Холодний став", coords: [49.8151, 30.0677], description: "Один з головних ставків парку." },
+    { name: "Палієва гора", coords: [49.8140, 30.0649], description: "Підвищення з історичними укріпленнями." },
+    { name: "Колона Пелікана", coords: [49.8121, 30.0669], description: "Тріумфальна колона з символічною скульптурою." },
+    { name: "Руїни Варни", coords: [49.8113, 30.0682], description: "Декоративні середньовічні руїни." },
+    { name: "Старий палац Браницьких", coords: [49.8132, 30.0640], description: "Маєток родини Браницьких." },
+    { name: "Сонячна галявина", coords: [49.8144, 30.0691], description: "Простора галявина для відпочинку." },
+    { name: "Розарій", coords: [49.8123, 30.0638], description: "Сад троянд із багатьма сортами." },
+    { name: "Острів Колоса", coords: [49.8144, 30.0725], description: "Острів, присвячений врожаю та родючості." },
+    { name: "Місток Левів", coords: [49.8128, 30.0643], description: "Місток, прикрашений левами." },
+    { name: "Археологічний вал", coords: [49.8112, 30.0655], description: "Залишки оборонних укріплень." },
+    { name: "Стара брама", coords: [49.8120, 30.0677], description: "Історичний вхід до парку." },
+    { name: "Малий ставок", coords: [49.8158, 30.0695], description: "Менший водойом поруч із галявинами." },
+    { name: "Мур (стіна саду)", coords: [49.8138, 30.0652], description: "Декоративна мурована стіна ландшафтного саду." },
+    { name: "Альтанка Ехо", coords: [49.8142, 30.0660], description: "Альтанка з акустичним ефектом." },
+    { name: "Вежа водопостачання", coords: [49.8153, 30.0629], description: "Стара водопостачальна вежа парку." },
+    { name: "Адміністративний будинок", coords: [49.8152, 30.0627], description: "Будівля садівників та керування парком." },
+    { name: "Меморіал Пам’яті", coords: [49.8118, 30.0665], description: "Місце пам’яті історичних подій." },
+    { name: "Обрійна тераса", coords: [49.8139, 30.0645], description: "Тераса з видом на парк та ставки." },
+    { name: "Острів Лебедів", coords: [49.8127, 30.0718], description: "Острів, де часто видно лебедів." },
+    { name: "Каскадний ставок", coords: [49.8147, 30.0679], description: "Ставок з каскадними перепадами води." },
+    { name: "Скеля Пелікан", coords: [49.8125, 30.0685], description: "Скеля, названа на честь пеліканів." },
+    { name: "Парк Сходи", coords: [49.8145, 30.0688], description: "Східчаста зона з оглядовими майданчиками." },
+    { name: "Зимовий сад", coords: [49.8131, 30.0652], description: "Кімната-сад для екзотичних рослин." },
+    { name: "Мала ротонда", coords: [49.8129, 30.0659], description: "Компактна ротонда для відпочинку." },
+    { name: "Фонтанна площа", coords: [49.8137, 30.0670], description: "Площа з декоративним фонтаном." }
+  ];
+
+  points.forEach(function(p) {
+    var marker = L.marker(p.coords).addTo(map)
+      .bindPopup("<b>" + p.name + "</b><br>" + p.description);
+
+    var div = document.createElement("div");
+    div.className = "point";
+    div.innerHTML = "<h4>" + p.name + "</h4><p>" + p.description + "</p>";
+    div.onclick = function() {
+      map.setView(p.coords, 17);
+      marker.openPopup();
+    };
+    document.getElementById("points-list").appendChild(div);
+  });
+</script>
+
+</body>
+</html>
